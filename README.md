@@ -2,6 +2,10 @@
 
 A powerful Model Context Protocol (MCP) server that provides comprehensive PC control capabilities including file operations, directory management, and command execution.
 
+<a href="https://glama.ai/mcp/servers/@koopatroopa787/first_mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@koopatroopa787/first_mcp/badge" alt="PC Control Server MCP server" />
+</a>
+
 ## Features
 
 ### File Operations
