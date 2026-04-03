@@ -1,25 +1,34 @@
 # MCP PC Control Server
 
-A powerful Model Context Protocol (MCP) server that provides comprehensive PC control capabilities including file operations, directory management, and command execution.
+A powerful Model Context Protocol (MCP) server that provides comprehensive PC control capabilities including file operations, directory management, command execution, system inspection, and process management. Designed to give AI assistants (Claude, GPT, Gemini, etc.) full, efficient control over the host machine.
 
 ## Features
 
 ### File Operations
 - **read_file** - Read complete file contents with proper encoding
+- **read_file_lines** - Read a specific range of lines from a file (efficient for large files)
 - **write_file** - Create new files or overwrite existing ones
-- **edit_file** - Make precise line-based edits with diff output
+- **append_to_file** - Append content to a file without overwriting it
+- **edit_file** - Make precise text-based edits with diff output
+- **copy_file** - Copy a file to a new location (source preserved)
 - **delete_file** - Remove files from the filesystem
 - **move_file** - Move or rename files and directories
-- **get_file_info** - Get detailed file metadata (size, timestamps, permissions)
+- **get_file_info** - Get detailed file metadata (size, timestamps, permissions, readability)
 
 ### Directory Operations
 - **create_directory** - Create directories (supports nested creation)
 - **list_directory** - List directory contents with detailed information
 - **delete_directory** - Recursively delete directories and their contents
-- **search_files** - Recursively search for files matching patterns
+- **search_files** - Recursively search for files matching name patterns
+
+### Content Search
+- **search_in_files** - Grep-like search for text content within files, with optional file-pattern filtering and case-insensitive mode
 
 ### System Operations
-- **execute_command** - Execute shell commands with optional working directory
+- **execute_command** - Execute shell commands with optional working directory and configurable timeout
+- **get_system_info** - Get OS, CPU, memory, uptime, hostname, and network interface details
+- **list_processes** - List running processes with optional name filter
+- **get_environment** - Read environment variables (one or all)
 
 ## Installation
 
@@ -65,9 +74,11 @@ Add this server to your Claude Desktop configuration file:
 
 Replace `/absolute/path/to/first_mcp` with the actual absolute path to this project directory.
 
-### Example with npx (Alternative)
+### Configuration with Other AI Clients
 
-You can also run it directly with npx if published to npm:
+Any MCP-compatible client (Claude, Cursor, Windsurf, Continue, etc.) can connect to this server using the same stdio transport approach. Point the client at the built `build/index.js` with `node`.
+
+### Example with npx (Alternative)
 
 ```json
 {
@@ -84,87 +95,108 @@ You can also run it directly with npx if published to npm:
 
 ### read_file
 ```typescript
+{ path: string }
+```
+
+### read_file_lines
+```typescript
 {
-  path: string  // Path to the file to read
+  path: string,
+  start: number,  // 1-based, inclusive
+  end?: number    // 1-based, inclusive (omit to read to end)
 }
 ```
 
 ### write_file
 ```typescript
-{
-  path: string,    // Path where file should be written
-  content: string  // Content to write
-}
+{ path: string, content: string }
+```
+
+### append_to_file
+```typescript
+{ path: string, content: string }
 ```
 
 ### edit_file
 ```typescript
 {
   path: string,
-  edits: [{
-    oldText: string,  // Exact text to find
-    newText: string   // Replacement text
-  }]
+  edits: [{ oldText: string, newText: string }]
 }
+```
+
+### copy_file
+```typescript
+{ source: string, destination: string }
 ```
 
 ### create_directory
 ```typescript
-{
-  path: string  // Directory path to create
-}
+{ path: string }
 ```
 
 ### list_directory
 ```typescript
-{
-  path: string  // Directory path to list
-}
+{ path: string }
 ```
 
 ### delete_file
 ```typescript
-{
-  path: string  // File path to delete
-}
+{ path: string }
 ```
 
 ### delete_directory
 ```typescript
-{
-  path: string  // Directory path to delete recursively
-}
+{ path: string }
 ```
 
 ### move_file
 ```typescript
-{
-  source: string,      // Current path
-  destination: string  // New path
-}
+{ source: string, destination: string }
 ```
 
 ### get_file_info
 ```typescript
-{
-  path: string  // Path to get info about
-}
+{ path: string }
 ```
 
 ### execute_command
 ```typescript
 {
-  command: string,           // Shell command to execute
-  workingDirectory?: string  // Optional working directory
+  command: string,
+  workingDirectory?: string,
+  timeout?: number  // ms, default 30000
 }
 ```
 
 ### search_files
 ```typescript
+{ path: string, pattern: string }  // pattern supports * and **
+```
+
+### search_in_files
+```typescript
 {
-  path: string,     // Directory to search in
-  pattern: string   // Pattern to match (supports * and **)
+  path: string,
+  query: string,
+  filePattern?: string,     // e.g. "*.ts"
+  caseSensitive?: boolean   // default false
 }
+```
+
+### get_system_info
+```typescript
+{}  // no arguments required
+```
+
+### list_processes
+```typescript
+{ filter?: string }  // optional substring filter on process name
+```
+
+### get_environment
+```typescript
+{ variable?: string }  // omit to get all env vars
 ```
 
 ## Security Considerations
@@ -178,7 +210,7 @@ You can also run it directly with npx if published to npm:
 **Recommendations:**
 - Only use with trusted MCP clients
 - Run with minimal necessary permissions
-- Be cautious with the `execute_command` tool
+- Be cautious with the `execute_command` and `delete_directory` tools
 - Consider implementing additional access controls for production use
 - Review all operations in sensitive environments
 
@@ -232,4 +264,5 @@ Contributions are welcome! Please feel free to submit issues or pull requests.
 
 - Verify the working directory exists and is accessible
 - Check that shell commands are appropriate for your operating system
+- Increase the `timeout` parameter for long-running commands
 - Some commands may require specific environment variables

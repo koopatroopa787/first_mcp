@@ -1,6 +1,6 @@
 {
   "name": "mcp-pc-control-server",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "MCP server for PC control with file operations and command execution",
   "type": "module",
   "main": "build/index.js",
