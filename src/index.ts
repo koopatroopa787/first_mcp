@@ -352,7 +352,7 @@ async function searchFiles(
 
       for (const entry of entries) {
         const fullPath = path.join(currentPath, entry.name);
-        const relativePath = path.relative(dirPath, fullPath);
+        const relativePath = path.relative(dirPath, fullPath).split(path.sep).join("/");
 
         if (entry.isDirectory()) {
           await search(fullPath);
@@ -410,7 +410,7 @@ async function searchInFiles(
         if (entry.isDirectory()) {
           await search(fullPath);
         } else {
-          const relativePath = path.relative(dirPath, fullPath);
+          const relativePath = path.relative(dirPath, fullPath).split(path.sep).join("/");
           if (patternRegex && !patternRegex.test(relativePath)) continue;
 
           try {
